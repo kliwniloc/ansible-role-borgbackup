@@ -14,19 +14,19 @@ platforms:
     dockerfile: Dockerfile.j2
     pre_build_image: false
     docker_networks:
-      - name: 'molecule-container-net'
+      - name: molecule-container-net
         driver_options:
           # Setting the mtu size due to issues with docker and VPN
           com.docker.network.driver.mtu: 1420
     networks:
-      - name: 'molecule-container-net'
+      - name: molecule-container-net
 
   - name: borg-server
     image: ${MOLECULE_DISTRO_SERVER:-debian:10}
     dockerfile: Dockerfile.j2
     pre_build_image: false
     networks:
-      - name: 'molecule-container-net'
+      - name: molecule-container-net
 
 
 provisioner:

@@ -19,15 +19,15 @@
 
         - name: Set ssh_key
           ansible.builtin.set_fact:
-            borg_server_host_ssh_key: "{{ borg_server_ssh_keyscan.stdout
-              | split(' ')
-              | reject('search', borg_server_host)
-              | join(' ') }}"
+            borg_server_host_ssh_key: '{{ borg_server_ssh_keyscan.stdout
+                                       | split(" ")
+                                       | reject("search", borg_server_host)
+                                       | join(" ") }}'
 
   vars:
     borg_server_host: borg-server
     borg_server_user_home: /opt/borg
-    borg_decryption_keys_yaml_path: "{{ playbook_dir }}/decryption_keys.yml"
+    borg_decryption_keys_yaml_path: '{{ playbook_dir }}/decryption_keys.yml'
     borg_included_dirs:
       - /etc
       - /home
@@ -36,8 +36,8 @@
       - /var
       - /reee reeee
     borg_cron_time:
-      minute: "*"
-      hour: "*"
+      minute: '*'
+      hour: '*'
 
   roles:
     - role: kliwniloc.borgbackup

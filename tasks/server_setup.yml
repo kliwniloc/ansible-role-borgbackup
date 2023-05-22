@@ -4,14 +4,14 @@
     name: borg
     comment: Borgbackup user
     create_home: true
-    home: "{{ borg_server_user_home }}"
+    home: '{{ borg_server_user_home }}'
     generate_ssh_key: true
   become: true
-  delegate_to: "{{ borg_server_host }}"
+  delegate_to: '{{ borg_server_host }}'
 
 - name: Make sure authorized keys exists
   ansible.builtin.file:
-    path: "{{ borg_server_user_home }}/.ssh/authorized_keys"
+    path: '{{ borg_server_user_home }}/.ssh/authorized_keys'
     state: touch
     owner: borg
     group: borg
@@ -19,4 +19,4 @@
     access_time: preserve
     modification_time: preserve
   become: true
-  delegate_to: "{{ borg_server_host }}"
+  delegate_to: '{{ borg_server_host }}'

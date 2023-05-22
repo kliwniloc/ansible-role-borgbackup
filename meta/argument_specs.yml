@@ -20,7 +20,7 @@ argument_specs:
       borg_server_host_url:
         type: str
         required: false
-        default: "{{ borg_server_host }}"
+        default: '{{ borg_server_host }}'
 
       borg_server_user_home:
         type: str
@@ -30,12 +30,12 @@ argument_specs:
       borg_repo_name:
         type: str
         required: false
-        default: "{{ inventory_hostname }}"
+        default: '{{ inventory_hostname }}'
 
       borg_backup_name_format:
         type: str
         required: false
-        default: "{hostname}-{now:%Y-%m-%dT%H:%M:%S}"
+        default: '{hostname}-{now:%Y-%m-%dT%H:%M:%S}'
 
       borg_mode_append_only:
         type: bool

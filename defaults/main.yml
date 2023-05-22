@@ -69,7 +69,7 @@ borg_mode_append_only: false
 # Most of the time the default option is fine.
 # For more information about the borg placeholder see
 # https://borgbackup.readthedocs.io/en/stable/usage/help.html#borg-help-placeholders
-borg_backup_name_format: "{hostname}-{now:%Y-%m-%dT%H:%M:%S}"
+borg_backup_name_format: '{hostname}-{now:%Y-%m-%dT%H:%M:%S}'
 
 # Borg has a few compression modes to those from:
 # none, lz4, zstd[,L], zlib[,L], lzma[,L], auto,C[,L], obfuscate,SPEC,C[,L].
@@ -95,7 +95,7 @@ borg_excluded_dirs: []
 # The passphrase will be stored in plaintext inside the cron job.
 # For more information about the borg passphrase see
 # https://borgbackup.readthedocs.io/en/stable/quickstart.html#passphrase-notes
-borg_passphrase: ""
+borg_passphrase: ''
 
 # Since borg encrypts the backups on the borg-server you should save the
 # encryption keys somewhere to another machine to be able to recover the backup

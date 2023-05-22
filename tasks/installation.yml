@@ -7,7 +7,7 @@
     update_cache: true
   become: true
   when: ansible_facts['os_family'] == "Debian"
-  delegate_to: "{{ borg_server_host }}"
+  delegate_to: '{{ borg_server_host }}'
 
 - name: Install Debian Client dependencies
   ansible.builtin.apt:
