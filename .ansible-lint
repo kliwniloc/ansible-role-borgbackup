@@ -1,0 +1,12 @@
+exclude_paths: []
+
+use_default_rules: true
+
+enable_list:
+  - fqcn-builtins
+  - yaml
+  - syntax-check[specific]
+  - name[missing]
+
+skip_list:
+  - "yaml[line-length]"

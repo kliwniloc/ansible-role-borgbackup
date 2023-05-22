@@ -1,0 +1,120 @@
+---
+- name: Create SSH Directory
+  ansible.builtin.file:
+    path: /root/.ssh
+    owner: root
+    group: root
+    mode: '0640'
+    state: directory
+  become: true
+
+- name: Add borg server to known_hosts
+  ansible.builtin.known_hosts:
+    name: "{{ borg_server_host_url }}"
+    key: "{{ borg_server_host_url }} {{ borg_server_host_ssh_key }}"
+    path: /root/.ssh/known_hosts
+    state: present
+  become: true
+
+- name: Generate SSH keys
+  community.crypto.openssh_keypair:
+    path: /root/.ssh/id_rsa
+    owner: root
+    group: root
+    mode: '0600'
+    comment: "root@{{ inventory_hostname }}"
+  become: true
+  register: ssh_key
+
+- name: Deploy Keys to Borg server
+  ansible.builtin.lineinfile:
+    path: "{{ borg_server_user_home }}/.ssh/authorized_keys"
+    line: >
+      restrict,command="borg serve
+      {{ "--append-only" if borg_mode_append_only }}
+      --restrict-to-repository {{ borg_repo_name }}"
+      {{ ssh_key.public_key }} root@{{ inventory_hostname }}
+    search_string: "{{ ssh_key.public_key }}"
+    state: present
+  become: true
+  delegate_to: "{{ borg_server_host }}"
+
+- name: Initialise Borg repository
+  ansible.builtin.command: >
+    borg init --encryption=repokey
+    borg@{{ borg_server_host_url }}:{{ borg_server_user_home }}/{{ borg_repo_name }}
+  environment:
+    BORG_PASSPHRASE: "{{ borg_passphrase }}"
+  become: true
+  register: init_borg_output
+  changed_when: init_borg_output.rc != 2
+  failed_when: >
+    init_borg_output.rc != 2 and
+    init_borg_output.rc != 0
+
+- name: Make sure key file exists
+  ansible.builtin.file:
+    path: "{{ borg_decryption_keys_yaml_path }}"
+    state: touch
+    mode: '0600'
+    access_time: preserve
+    modification_time: preserve
+  delegate_to: localhost
+  become: false
+
+- name: Read Vars file
+  ansible.builtin.include_vars:
+    file: "{{ borg_decryption_keys_yaml_path }}"
+  register: local
+
+- name: Add repository encryption keys to ansible repo
+  when: not inventory_hostname in local.ansible_facts
+  throttle: 1
+  block:
+    - name: If host new read encryption keys
+      ansible.builtin.command: >
+        borg key export --paper
+        borg@{{ borg_server_host_url }}:{{ borg_server_user_home }}/{{ borg_repo_name }}
+      become: true
+      register: borg_keys
+      changed_when: borg_keys.rc != 0
+
+    - name: If host new add encryption keys to vars
+      ansible.builtin.set_fact:
+        decryption_keys: "{{ local.ansible_facts | combine({inventory_hostname: borg_keys.stdout}) }}"
+
+- name: Update encryption vars
+  ansible.builtin.copy:
+    content: "{{ decryption_keys | to_nice_yaml(indent=2, width=2048) }}"
+    dest: "{{ borg_decryption_keys_yaml_path }}"
+    mode: '0600'
+  when: decryption_keys is defined
+  delegate_to: localhost
+  become: false
+
+- name: Set up env for cron job
+  ansible.builtin.cron:
+    name: BORG_PASSPHRASE
+    job: "{{ borg_passphrase }}"
+    state: "{{ 'present' if (borg_included_dirs | length > 0) else 'absent' }}"
+    env: true
+    user: root
+  become: true
+
+- name: Set up backup cron jobs
+  ansible.builtin.cron:
+    name: BORG (Application level backups)
+    job: >
+      borg create -C {{ borg_compression }}
+      borg@{{ borg_server_host_url }}:{{ borg_server_user_home }}/{{ borg_repo_name }}::{{ borg_backup_name_format }}
+      {{ borg_included_dirs | map('quote') | join(' ') }}
+      {% for e in (borg_excluded_dirs | map('quote')) %} --exclude {{ e }} {% endfor %}
+    user: root
+    state: "{{ 'present' if (borg_included_dirs | length > 0) else 'absent' }}"
+    minute: "{{ borg_cron_time.minute | default(omit) }}"
+    hour: "{{ borg_cron_time.hour | default(omit) }}"
+    weekday: "{{ borg_cron_time.weekday | default(omit) }}"
+    day: "{{ borg_cron_time.day | default(omit) }}"
+    month: "{{ borg_cron_time.month | default(omit) }}"
+    special_time: "{{ borg_cron_time.special_time | default(omit) }}"
+  become: true

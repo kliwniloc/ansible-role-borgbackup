@@ -1,0 +1,20 @@
+---
+dependencies: []
+
+galaxy_info:
+  role_name: borgbackup
+  standalone: true
+  author: kliwniloc
+  description: BorgBackup role for for deploying scheduled backups
+  license: license (MIT)
+  min_ansible_version: '2.4'
+  platforms:
+    - name: Debian
+      versions:
+        - all
+    - name: Ubuntu
+      versions:
+        - all
+  galaxy_tags:
+    - borgbackup
+    - backup

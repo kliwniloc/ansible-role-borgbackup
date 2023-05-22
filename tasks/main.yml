@@ -1,0 +1,9 @@
+---
+- name: Install dependencies
+  ansible.builtin.include_tasks: installation.yml
+
+- name: Run setup on server
+  ansible.builtin.include_tasks: server_setup.yml
+
+- name: Run setup on client
+  ansible.builtin.include_tasks: client_setup.yml

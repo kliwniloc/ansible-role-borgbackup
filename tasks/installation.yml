@@ -1,0 +1,21 @@
+---
+- name: Install Debian Server dependencies
+  ansible.builtin.apt:
+    name:
+      - borgbackup
+    state: present
+    update_cache: true
+  become: true
+  when: ansible_facts['os_family'] == "Debian"
+  delegate_to: "{{ borg_server_host }}"
+
+- name: Install Debian Client dependencies
+  ansible.builtin.apt:
+    name:
+      - borgbackup
+      - cron
+      - ssh
+    state: present
+    update_cache: true
+  become: true
+  when: ansible_facts['os_family'] == "Debian"

@@ -1,0 +1,125 @@
+---
+################################################################################
+# Borg Server Host Configuration
+################################################################################
+
+# This it the host, as specified in your ansible inventory file, that the
+# backups will be made to.
+# Ansible will delegate borg-server related tasks to that host.
+# Currently there is only a single backup host supported per role run.
+# ---
+# borg_server_host: SETME
+
+# This is the public key of the ssh server of your borg server.
+# It is used for protecting against spoofed borg servers. It is recommended you
+# set this variable as a group var in your ansible repository as it is a per
+# borg-server configuration. To get this key you can run ssh-keyscan against
+# your borg server like this:
+# ssh-keyscan -t rsa borg.example.org
+# You will need to remove the hostname from the output so that the
+# remaining key will look something like this:
+# ssh-rsa AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA...
+# ---
+# borg_server_host_ssh_key: SETME
+
+# This is the host url that will be used for running borg related commands on
+# the borg client. The borg server ssh port needs to be reachable from the borg
+# borg client under this host.
+# This defaults to the borg_server_host which will work as long as the inventory
+# hostnames are globally reachable.
+borg_server_host_url: '{{ borg_server_host }}'
+
+# The home directory of the borg user that is created on the borg server.
+# All borg borg client repositories will be saved in this directory on the borg
+# server. e.g. /opt/borg/client1 /opt/borg/client2
+borg_server_user_home: /opt/borg
+
+
+################################################################################
+# Borg Repository Configuration
+# See: https://borgbackup.readthedocs.io/en/stable/usage/serve.html
+################################################################################
+
+# The name of the repository (directory) created on the borg-server
+# `{{ borg_server_user_home  }}/{{ borg_repo_name }}`
+# This setting is mostly relevant if you use multiple repositories per
+# borg-client in which case you have to set a custom repo names / formats to
+# avoid clashes.
+borg_repo_name: '{{ inventory_hostname }}'
+
+# Should the repo be append only? (--append-only)
+# This will deny any request to delete data from the backup repository coming
+# from the client host. This is so that an attacker would not be able to simply
+# delete the backups from a compromised client.
+# With this configuration option enabled you won't have the ability to remove
+# old backups directly from the client that pushes the backups.
+# See https://borgbackup.readthedocs.io/en/stable/usage/notes.html#append-only-mode-forbid-compaction
+borg_mode_append_only: false
+
+
+################################################################################
+# Borg Backup Configuration
+# See: https://borgbackup.readthedocs.io/en/stable/usage/create.html
+################################################################################
+
+# This is the name of the backup in the configured repository
+# The default here creates a backup with the hostname and the current time in
+# the name. It is important to dynamically generate the backup names by using
+# the placeholders so that you don't have colliding backup names.
+# Most of the time the default option is fine.
+# For more information about the borg placeholder see
+# https://borgbackup.readthedocs.io/en/stable/usage/help.html#borg-help-placeholders
+borg_backup_name_format: "{hostname}-{now:%Y-%m-%dT%H:%M:%S}"
+
+# Borg has a few compression modes to those from:
+# none, lz4, zstd[,L], zlib[,L], lzma[,L], auto,C[,L], obfuscate,SPEC,C[,L].
+# For more information see the borg compression page: `borg help compression` or
+# https://borgbackup.readthedocs.io/en/stable/usage/help.html#borg-help-compression
+borg_compression: zstd
+
+# This is a list of files and directories to be backed up in the cron job.
+# In case you leave this empty, the role will not create an automatic backup job
+borg_included_dirs: []
+
+# This is a list of files and directories that you wish to have excluded from
+# Your backups. You may need this in case you want to remove a file from a
+# folder which you want to have backed up e.g. cache directory in application.
+# If you want to backup `/application/data` and `/application/db`
+# but not `application/cache` you can add `/application` to `borg_included_dirs`
+# and add `application/cache` to `borg_excluded_dirs`.
+borg_excluded_dirs: []
+
+# By default the role is configured to only use an encryption key with no
+# passphrase. This allows it to use the borgs command on the machine without any
+# haste. If you wish to enable the borg passphrase you can do so here. Note that
+# The passphrase will be stored in plaintext inside the cron job.
+# For more information about the borg passphrase see
+# https://borgbackup.readthedocs.io/en/stable/quickstart.html#passphrase-notes
+borg_passphrase: ""
+
+# Since borg encrypts the backups on the borg-server you should save the
+# encryption keys somewhere to another machine to be able to recover the backup
+# without the keys on the backup-client.
+# While you need the decryption keys as well as actual access to the borg
+# repository to download the backup data, you should still treat the decryption
+# keys as rather sensitive information.
+# Depending on your use case it may be okay to store them in your git repository.
+# If wish to encrypt the decryption keys, you look into third party tools for
+# that such as ansible-vault, git-crypt or a completely separate secrets
+# management system.
+borg_decryption_keys_yaml_path: '{{ inventory_dir }}/decryption_keys.yml'
+
+# Define the cron values for the automatic backup job as specified in the cron
+# module.
+# https://docs.ansible.com/ansible/latest/collections/ansible/builtin/cron_module.html
+# Values that are not specified are omitted
+# borg_cron_time:
+#   minute:
+#   hour:
+#   weekday:
+#   day:
+#   month:
+#   special_time:
+borg_cron_time:
+  minute: 0
+  hour: 3
