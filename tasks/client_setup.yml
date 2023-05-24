@@ -48,9 +48,9 @@
   become: true
   register: init_borg_output
   changed_when: init_borg_output.rc != 2
-  failed_when: >
-    init_borg_output.rc != 2 and
-    init_borg_output.rc != 0
+  failed_when:
+    - init_borg_output.rc != 2
+    - init_borg_output.rc != 0
 
 - name: Make sure key file exists
   ansible.builtin.file:
