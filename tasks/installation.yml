@@ -13,7 +13,6 @@
   ansible.builtin.apt:
     name:
       - borgbackup
-      - cron
       - ssh
     state: present
     update_cache: true

@@ -9,6 +9,13 @@
     - name: Set borg server openssh key variable
       become: true
       block:
+        - name: Start ssh
+          ansible.builtin.systemd:
+            name: sshd
+            state: started
+          become: true
+          delegate_to: '{{ borg_server_host }}'
+
         - name: Fetch ssh_key
           ansible.builtin.command: >
             ssh-keyscan -t rsa
@@ -35,9 +42,6 @@
       - /opt
       - /var
       - /reee reeee
-    borg_cron_time:
-      minute: '*'
-      hour: '*'
 
   roles:
     - role: kliwniloc.borgbackup

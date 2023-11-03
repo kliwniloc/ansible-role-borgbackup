@@ -77,7 +77,7 @@ borg_backup_name_format: '{hostname}-{now:%Y-%m-%dT%H:%M:%S}'
 # https://borgbackup.readthedocs.io/en/stable/usage/help.html#borg-help-compression
 borg_compression: zstd
 
-# This is a list of files and directories to be backed up in the cron job.
+# This is a list of files and directories to be backed up in the systemd job.
 # In case you leave this empty, the role will not create an automatic backup job
 borg_included_dirs: []
 
@@ -92,7 +92,7 @@ borg_excluded_dirs: []
 # By default the role is configured to only use an encryption key with no
 # passphrase. This allows it to use the borgs command on the machine without any
 # haste. If you wish to enable the borg passphrase you can do so here. Note that
-# The passphrase will be stored in plaintext inside the cron job.
+# The passphrase will be stored in plaintext inside the backup script.
 # For more information about the borg passphrase see
 # https://borgbackup.readthedocs.io/en/stable/quickstart.html#passphrase-notes
 borg_passphrase: ''
@@ -109,17 +109,40 @@ borg_passphrase: ''
 # management system.
 borg_decryption_keys_yaml_path: '{{ inventory_dir }}/decryption_keys.yml'
 
-# Define the cron values for the automatic backup job as specified in the cron
-# module.
-# https://docs.ansible.com/ansible/latest/collections/ansible/builtin/cron_module.html
-# Values that are not specified are omitted
-# borg_cron_time:
-#   minute:
-#   hour:
-#   weekday:
-#   day:
-#   month:
-#   special_time:
-borg_cron_time:
-  minute: 0
-  hour: 3
+# The role creates a script for backing up with the configured parameters that
+# the regular systemd service then executes. This specifies the default location
+# and name where the script is stored. By default, we store it as
+# `/usr/local/bin/run_borg_backup` so that you can run `run_borg_backup` from
+# your shell to create manual backups.
+# When you use multiple backups, this script will trigger all of them. You can
+# trigger them individually by calling
+# {{ borg_backup_script_location }}@{{ borg_backup_argument }}.
+# See: `borg_backup_argument` variable.
+borg_backup_script_location: /usr/local/bin/run_borg_backup
+
+# Name of the systemd timer that is created for the borg service.
+# The borg backup argument is appended to the timer name, meaning the timer will
+# be called {{ borg_backup_timer_name }}@{{ borg_backup_argument }}
+borg_backup_timer_name: borg_backup
+
+# Name of the systemd service that is created for the borg service.
+# The borg backup argument is appended to the service name, meaning the service
+# will be called {{ borg_backup_service_name }}@{{ borg_backup_argument }}
+borg_backup_service_name: borg_backup
+
+# The backup argument is appended to systemd timer / systemd service and the
+# backup script. It is used to distinguish backup targets from one another
+# meaning it should be unique per target.
+# By default, we use borg_server_host_url, which is fine as long as you don't
+# need multiple backup repositories from the same client on the same server.
+borg_backup_argument: '{{ borg_server_host_url }}'
+
+# Configures the systemd timer for how regularly to run the backup. By default,
+# the backup will run every night attacker 2AM. For more information on how to
+# configure this, see: systemd.timer(5)
+borg_systemd_oncalendar: '*-*-* 02:00:00'
+
+# Specify the accuracy the timer shall elapse with. By default, we use 60min
+# to distribute the load on the backup server. For more information on how to
+# configure this see: systemd.timer(5)
+borg_systemd_accuracysec: 60min

@@ -1,0 +1,31 @@
+---
+- name: Create script for automatic borg backup
+  ansible.builtin.file:
+    dest: '{{ script_location }}'
+    state: touch
+    owner: root
+    group: root
+    modification_time: preserve
+    access_time: preserve
+    mode: '0711'
+  become: true
+
+- name: Insert shebang into backup script
+  ansible.builtin.lineinfile:
+    path: '{{ script_location }}'
+    line: '#!/bin/bash'
+    insertbefore: BOF
+    state: present
+  become: true
+
+- name: Insert Backup job block into scripts
+  ansible.builtin.blockinfile:
+    path: '{{ script_location }}'
+    marker: '## {mark} ANSIBLE MANAGED BLOCK for server: {{ borg_server_host_url }}'
+    block: |
+      export BORG_PASSPHRASE={{ borg_passphrase }}
+      borg create -C {{ borg_compression }} \
+      borg@{{ borg_server_host_url }}:{{ borg_server_user_home }}/{{ borg_repo_name }}::{{ borg_backup_name_format }} \
+      {{ borg_included_dirs | map('quote') | join(' ') }} \
+      {% for e in (borg_excluded_dirs | map('quote')) %} --exclude {{ e }} {% endfor %}
+  become: true

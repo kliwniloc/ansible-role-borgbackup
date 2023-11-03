@@ -92,29 +92,40 @@
   delegate_to: localhost
   become: false
 
-- name: Set up env for cron job
-  ansible.builtin.cron:
-    name: BORG_PASSPHRASE
-    job: '{{ borg_passphrase }}'
-    state: '{{ "present" if (borg_included_dirs | length > 0) else "absent" }}'
-    env: true
-    user: root
+- name: Create backup scripts
+  ansible.builtin.include_tasks: client_create_scripts_each.yml
+  loop:
+    - '{{ borg_backup_script_location }}'
+    - '{{ borg_backup_script_location }}{{ "@" if borg_backup_argument != "" }}{{ borg_backup_argument }}'
+  loop_control:
+    loop_var: script_location
+
+- name: Configure systemd borg_backup service
+  ansible.builtin.template:
+    src: borg_backup.service.j2
+    dest: /etc/systemd/system/{{ borg_backup_timer_name }}{{ "@" if borg_backup_argument != "" }}{{ borg_backup_argument }}.service
+    mode: '0644'
+    owner: root
+    group: root
+  notify: Reload systemd
   become: true
 
-- name: Set up backup cron jobs
-  ansible.builtin.cron:
-    name: BORG (Application level backups)
-    job: >
-      borg create -C {{ borg_compression }}
-      borg@{{ borg_server_host_url }}:{{ borg_server_user_home }}/{{ borg_repo_name }}::{{ borg_backup_name_format }}
-      {{ borg_included_dirs | map('quote') | join(' ') }}
-      {% for e in (borg_excluded_dirs | map('quote')) %} --exclude {{ e }} {% endfor %}
-    user: root
-    state: '{{ "present" if (borg_included_dirs | length > 0) else "absent" }}'
-    minute: '{{ borg_cron_time.minute | default(omit) }}'
-    hour: '{{ borg_cron_time.hour | default(omit) }}'
-    weekday: '{{ borg_cron_time.weekday | default(omit) }}'
-    day: '{{ borg_cron_time.day | default(omit) }}'
-    month: '{{ borg_cron_time.month | default(omit) }}'
-    special_time: '{{ borg_cron_time.special_time | default(omit) }}'
+- name: Configure systemd borg_backup timer
+  ansible.builtin.template:
+    src: borg_backup.timer.j2
+    dest: /etc/systemd/system/{{ borg_backup_timer_name }}{{ "@" if borg_backup_argument != "" }}{{ borg_backup_argument }}.timer
+    mode: '0644'
+    owner: root
+    group: root
+  notify: Reload systemd
+  become: true
+
+- name: Reload systemd now before enabling services
+  ansible.builtin.meta: flush_handlers
+
+- name: Enable borg_backup systemd timer
+  ansible.builtin.systemd:
+    name: '{{ borg_backup_timer_name }}{{ "@" if borg_backup_argument != "" }}{{ borg_backup_argument }}.timer'
+    state: started
+    enabled: true
   become: true

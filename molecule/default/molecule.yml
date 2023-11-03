@@ -13,6 +13,7 @@ platforms:
     image: ${MOLECULE_DISTRO_CLIENT:-debian:10}
     dockerfile: Dockerfile.j2
     pre_build_image: false
+    privileged: true
     docker_networks:
       - name: molecule-container-net
         driver_options:
@@ -25,6 +26,7 @@ platforms:
     image: ${MOLECULE_DISTRO_SERVER:-debian:10}
     dockerfile: Dockerfile.j2
     pre_build_image: false
+    privileged: true
     networks:
       - name: molecule-container-net
 

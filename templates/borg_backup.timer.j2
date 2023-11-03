@@ -1,0 +1,11 @@
+[Unit]
+Description=Runs borgbackup to create application level backup (ANSIBLE MANAGED)
+Requires={{ borg_backup_service_name }}{{ "@" if borg_backup_argument != "" }}{{ borg_backup_argument }}.service
+
+[Timer]
+Unit={{ borg_backup_service_name }}{{ "@" if borg_backup_argument != "" }}{{ borg_backup_argument }}.service
+OnCalendar={{ borg_systemd_oncalendar }}
+AccuracySec={{ borg_systemd_accuracysec }}
+
+[Install]
+WantedBy=timers.target

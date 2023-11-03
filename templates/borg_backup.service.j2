@@ -1,0 +1,12 @@
+[Unit]
+Description=Runs borgbackup to create application level backup (ANSIBLE MANAGED)
+Wants={{ borg_backup_timer_name }}{{ "@" if borg_backup_argument != "" }}{{ borg_backup_argument }}.timer
+
+[Service]
+Type=oneshot
+ExecStart={{ borg_backup_script_location }}
+User=root
+Group=root
+
+[Install]
+WantedBy=multi-user.target

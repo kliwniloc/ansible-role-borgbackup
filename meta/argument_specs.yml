@@ -67,27 +67,32 @@ argument_specs:
         type: str
         required: false
 
-      borg_cron_time:
-        type: dict
+      borg_backup_script_location:
+        type: str
         required: false
-        options:
-          minute:
-            type: str
-            required: false
-            default: 0
-          hour:
-            type: str
-            required: false
-            default: 3
-          weekday:
-            type: str
-            required: false
-          day:
-            type: str
-            required: false
-          month:
-            type: str
-            required: false
-          special_time:
-            type: str
-            required: false
+        default: /usr/local/bin/run_borg_backup
+
+      borg_backup_timer_name:
+        type: str
+        required: false
+        default: borg_backup
+
+      borg_backup_service_name:
+        type: str
+        required: false
+        default: borg_backup
+
+      borg_backup_argument:
+        type: str
+        required: false
+        default: '{ borg_server_host_url }'
+
+      borg_systemd_oncalendar:
+        type: str
+        required: false
+        default: '*-*-* 02:00:00'
+
+      borg_systemd_accuracysec:
+        type: str
+        required: false
+        default: 60min

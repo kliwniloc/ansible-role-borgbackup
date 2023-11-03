@@ -1,9 +1,9 @@
 Ansible Role: BorgBackup
 ========================
 
-An ansible role that installs and configures a cron task for BorgBackup on a
-client and (delegated) server.
-This allows you to very simply add backups to your hosts.
+An Ansible role that installs and configures a systemd service for BorgBackup on
+a client and (delegated) server.
+This allows you to very easily add backups to your hosts.
 
 The documentation assumes basic knowledge about BorgBackup. You can get up to
 speed with Borg by reading their excellent documentation on
