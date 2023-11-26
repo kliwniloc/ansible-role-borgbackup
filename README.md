@@ -44,7 +44,7 @@ ansible-galaxy collection install kliwniloc.borgbackup
 via git
 
 ```sh
-ansible-galaxy collection install git+https://github.com/kliwniloc/ansible-role-borgbackup.git,main
+ansible-galaxy collection install git+https://github.com/kliwniloc/ansible-role-borgbackup.git,master
 ```
 
 ```yaml
