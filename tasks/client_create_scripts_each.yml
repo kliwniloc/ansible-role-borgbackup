@@ -23,7 +23,7 @@
     path: '{{ script_location }}'
     marker: '## {mark} ANSIBLE MANAGED BLOCK for server: {{ borg_server_host_url }}'
     block: |
-      export BORG_PASSPHRASE='{{ borg_passphrase }}'
+      export BORG_PASSPHRASE={{ borg_passphrase | quote }}
       borg create -C {{ borg_compression }} \
       borg@{{ borg_server_host_url }}:{{ borg_server_user_home }}/{{ borg_repo_name }}::{{ borg_backup_name_format }} \
       {{ borg_included_dirs | map('quote') | join(' ') }} \
