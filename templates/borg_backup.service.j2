@@ -7,7 +7,9 @@ Type=oneshot
 ExecStart={{ borg_backup_script_location }}
 User=root
 Group=root
-SuccessExitStatus=1
+{% if borg_backup_service_successful_exit_status | length > 0 %}
+SuccessExitStatus={{ borg_backup_service_successful_exit_status | join(' ') }}
+{% endif %}
 
 [Install]
 WantedBy=multi-user.target

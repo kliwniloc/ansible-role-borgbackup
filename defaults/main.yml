@@ -130,6 +130,24 @@ borg_backup_timer_name: borg_backup
 # will be called {{ borg_backup_service_name }}@{{ borg_backup_argument }}
 borg_backup_service_name: borg_backup
 
+# Includes a list of successful exit codes that are accepted as a successful
+# backup and not throw a systemd failure in addition to exit code 0.
+#
+# For borg specifically, you may want to ignore code 1 as it is a general
+# warning, not a failure of the backup. Be default however, since you should
+# check warnings on borg, we do fail the systemd service on exit code 1. You
+# can change that here. Full list of error codes that borg may return:
+# https://borgbackup.readthedocs.io/en/stable/usage/general.html#return-codes
+#
+# The list of axit codes will be appended in the systemd SiccessExitStatus
+# field separated by spaces, so that:
+# borg_backup_service_successful_exit_status: [TEMPFAIL, 250, SIGKILL]
+# will render to:
+# SuccessExitStatus=TEMPFAIL 250 SIGKILL
+# in the systemd service.
+# https://www.freedesktop.org/software/systemd/man/latest/systemd.service.html#SuccessExitStatus=
+borg_backup_service_successful_exit_status: []
+
 # The backup argument is appended to systemd timer / systemd service and the
 # backup script. It is used to distinguish backup targets from one another
 # meaning it should be unique per target.
