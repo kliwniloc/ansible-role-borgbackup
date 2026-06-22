@@ -7,6 +7,7 @@ Type=oneshot
 ExecStart={{ borg_backup_script_location }}
 User=root
 Group=root
+SuccessExitStatus=1
 
 [Install]
 WantedBy=multi-user.target
