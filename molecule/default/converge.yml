@@ -1,11 +1,14 @@
 ---
 - name: Converge
-  hosts: borg-client
+  hosts:
+    - borg-client
+    - borg-client-success-exit-status
+  serial: 1
 
   pre_tasks:
-      # This would usually be set by the user globally on their ansible
-      # repository and can be a security risk to do automatically. We will
-      # however set the variable here in the pre_tasks since it is for testing.
+    # This would usually be set by the user globally on their ansible
+    # repository and can be a security risk to do automatically. We will
+    # however set the variable here in the pre_tasks since it is for testing.
     - name: Set borg server openssh key variable
       become: true
       block:
@@ -14,7 +17,7 @@
             name: sshd
             state: started
           become: true
-          delegate_to: '{{ borg_server_host }}'
+          delegate_to: "{{ borg_server_host }}"
 
         - name: Fetch ssh_key
           ansible.builtin.command: >
@@ -27,14 +30,21 @@
         - name: Set ssh_key
           ansible.builtin.set_fact:
             borg_server_host_ssh_key: '{{ borg_server_ssh_keyscan.stdout
-                                       | split(" ")
-                                       | reject("search", borg_server_host)
-                                       | join(" ") }}'
+              | split(" ")
+              | reject("search", borg_server_host)
+              | join(" ") }}'
+
+    - name: Allow additional successful exit codes on alternate client
+      ansible.builtin.set_fact:
+        borg_backup_service_successful_exit_status:
+          - 1
+          - TEMPFAIL
+      when: inventory_hostname == 'borg-client-success-exit-status'
 
   vars:
     borg_server_host: borg-server
     borg_server_user_home: /opt/borg
-    borg_decryption_keys_yaml_path: '{{ playbook_dir }}/decryption_keys.yml'
+    borg_decryption_keys_yaml_path: "{{ playbook_dir }}/decryption_keys.yml"
     borg_included_dirs:
       - /etc
       - /home

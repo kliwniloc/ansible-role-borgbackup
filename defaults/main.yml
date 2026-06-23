@@ -27,13 +27,12 @@
 # borg client under this host.
 # This defaults to the borg_server_host which will work as long as the inventory
 # hostnames are globally reachable.
-borg_server_host_url: '{{ borg_server_host }}'
+borg_server_host_url: "{{ borg_server_host }}"
 
 # The home directory of the borg user that is created on the borg server.
 # All borg borg client repositories will be saved in this directory on the borg
 # server. e.g. /opt/borg/client1 /opt/borg/client2
 borg_server_user_home: /opt/borg
-
 
 ################################################################################
 # Borg Repository Configuration
@@ -45,7 +44,7 @@ borg_server_user_home: /opt/borg
 # This setting is mostly relevant if you use multiple repositories per
 # borg-client in which case you have to set a custom repo names / formats to
 # avoid clashes.
-borg_repo_name: '{{ inventory_hostname }}'
+borg_repo_name: "{{ inventory_hostname }}"
 
 # Should the repo be append only? (--append-only)
 # This will deny any request to delete data from the backup repository coming
@@ -55,7 +54,6 @@ borg_repo_name: '{{ inventory_hostname }}'
 # old backups directly from the client that pushes the backups.
 # See https://borgbackup.readthedocs.io/en/stable/usage/notes.html#append-only-mode-forbid-compaction
 borg_mode_append_only: false
-
 
 ################################################################################
 # Borg Backup Configuration
@@ -69,7 +67,7 @@ borg_mode_append_only: false
 # Most of the time the default option is fine.
 # For more information about the borg placeholder see
 # https://borgbackup.readthedocs.io/en/stable/usage/help.html#borg-help-placeholders
-borg_backup_name_format: '{hostname}-{now:%Y-%m-%dT%H:%M:%S}'
+borg_backup_name_format: "{hostname}-{now:%Y-%m-%dT%H:%M:%S}"
 
 # Borg has a few compression modes to those from:
 # none, lz4, zstd[,L], zlib[,L], lzma[,L], auto,C[,L], obfuscate,SPEC,C[,L].
@@ -95,7 +93,7 @@ borg_excluded_dirs: []
 # The passphrase will be stored in plaintext inside the backup script.
 # For more information about the borg passphrase see
 # https://borgbackup.readthedocs.io/en/stable/quickstart.html#passphrase-notes
-borg_passphrase: ''
+borg_passphrase: ""
 
 # Since borg encrypts the backups on the borg-server you should save the
 # encryption keys somewhere to another machine to be able to recover the backup
@@ -107,7 +105,7 @@ borg_passphrase: ''
 # If wish to encrypt the decryption keys, you look into third party tools for
 # that such as ansible-vault, git-crypt or a completely separate secrets
 # management system.
-borg_decryption_keys_yaml_path: '{{ inventory_dir }}/decryption_keys.yml'
+borg_decryption_keys_yaml_path: "{{ inventory_dir }}/decryption_keys.yml"
 
 # The role creates a script for backing up with the configured parameters that
 # the regular systemd service then executes. This specifies the default location
@@ -119,6 +117,10 @@ borg_decryption_keys_yaml_path: '{{ inventory_dir }}/decryption_keys.yml'
 # {{ borg_backup_script_location }}@{{ borg_backup_argument }}.
 # See: `borg_backup_argument` variable.
 borg_backup_script_location: /usr/local/bin/run_borg_backup
+
+################################################################################
+# Borg Backup SystemD configuration
+################################################################################
 
 # Name of the systemd timer that is created for the borg service.
 # The borg backup argument is appended to the timer name, meaning the timer will
@@ -153,12 +155,12 @@ borg_backup_service_successful_exit_status: []
 # meaning it should be unique per target.
 # By default, we use borg_server_host_url, which is fine as long as you don't
 # need multiple backup repositories from the same client on the same server.
-borg_backup_argument: '{{ borg_server_host_url }}'
+borg_backup_argument: "{{ borg_server_host_url }}"
 
 # Configures the systemd timer for how regularly to run the backup. By default,
 # the backup will run every night attacker 2AM. For more information on how to
 # configure this, see: systemd.timer(5)
-borg_systemd_oncalendar: '*-*-* 02:00:00'
+borg_systemd_oncalendar: "*-*-* 02:00:00"
 
 # Specify the accuracy the timer shall elapse with. By default, we use 60min
 # to distribute the load on the backup server. For more information on how to
